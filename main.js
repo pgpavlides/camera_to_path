@@ -33,18 +33,18 @@ scene.add(grid);
 let obj = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshLambertMaterial({
   color: "aqua"
 }));
-obj.scale.set(2, 3, 1);
+obj.scale.set(1, 1, 1);
 scene.add(obj);
 
-let curve = new THREE.EllipseCurve(0, 0, 10, 5);
+let curve = new THREE.EllipseCurve(0, 0, 5, 5);
 
 let line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getSpacedPoints(100)), new THREE.LineBasicMaterial({
   color: "yellow"
 }));
-line.rotation.x = -Math.PI * 0.25;
-line.rotation.z = Math.PI * 0.125;
-line.position.x = 5;
-line.position.z = -2;
+line.rotation.x = Math.PI / 2
+
+line.position.x = 0;
+line.position.z = 0;
 scene.add(line);
 
 let cam = new THREE.PerspectiveCamera(25, 1, 1.5, 25);
@@ -58,11 +58,19 @@ let wpSize = Math.min(innerWidth, innerHeight) / 4;
 renderer.setAnimationLoop(() => {
 
   let t = (clock.getElapsedTime() * 0.05) % 1;
-  
-  curve.getPointAt(t, v)
+
+  curve.getPointAt(t, v);
   cam.position.copy(v);
   cam.position.applyMatrix4(line.matrixWorld);
-  cam.lookAt(obj.position);
+  
+  // Calculate the vector from the camera position to the center of the circle
+  let dirToCenter = new THREE.Vector3(0, 0, 0).sub(cam.position).normalize();
+  
+  // Calculate the point in space that the camera should look at, which is a position
+  // along the line from the camera position to the center of the circle but extended outward.
+  let lookAtPoint = cam.position.clone().add(dirToCenter.multiplyScalar(-10)); // you can adjust the scalar value to your needs
+  
+  cam.lookAt(lookAtPoint);
 
   renderer.clear();
   camHelper.visible = true;
